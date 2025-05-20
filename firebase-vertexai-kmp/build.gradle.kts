@@ -29,6 +29,12 @@ kotlin {
                 //put your multiplatform dependencies here
             }
         }
+        val androidMain by getting {
+            dependencies {
+                implementation(project.dependencies.platform(libs.firebase.bom))
+                implementation(libs.firebase.vertexai)
+            }
+        }
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
@@ -38,7 +44,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.seanchinjunkai.firebase-vertexai-kmp"
+    namespace = "io.github.seanchinjunkai.firebase_vertexai_kmp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
