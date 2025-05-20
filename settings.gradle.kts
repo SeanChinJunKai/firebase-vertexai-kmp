@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "multiplatform-library-template"
-include(":library")
+rootProject.name = "firebase-vertexai-kmp"
+include(":firebase-vertexai-kmp")
