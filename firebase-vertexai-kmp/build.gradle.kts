@@ -1,6 +1,7 @@
 import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -19,14 +20,36 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+
+    val xcf = XCFramework()
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach {
+        it.binaries.framework {
+            baseName = "shared"
+            xcf.add(this)
+        }
+
+        val platform = when (it.targetName) {
+            "iosSimulatorArm64" -> "iphonesimulator"
+            "iosArm64" -> "iphoneos"
+            else -> error("Unsupported target $name")
+        }
+
+        it.compilations.getByName("main") {
+            cinterops.create("FirebaseVertexAIBridge") {
+                definitionFile.set(project.file("src/nativeInterop/cinterop/FirebaseVertexAIBridge.def"))
+                includeDirs.headerFilterOnly("$rootDir/FirebaseVertexAIBridge/build/Release-$platform/include")
+            }
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                //put your multiplatform dependencies here
+                implementation(libs.kermit)
+                implementation(libs.kotlinx.coroutines)
             }
         }
         val androidMain by getting {
@@ -58,7 +81,9 @@ android {
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
-    signAllPublications()
+    if (!gradle.startParameter.taskNames.any { it.contains("publishToMavenLocal") }) {
+        signAllPublications()
+    }
 
     coordinates(group.toString(), "firebase-vertexai-kmp", version.toString())
 

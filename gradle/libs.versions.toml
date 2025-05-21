@@ -4,13 +4,18 @@ kotlin = "2.1.10"
 android-minSdk = "24"
 android-compileSdk = "34"
 firebase-bom = "33.13.0"
+kermit = "2.0.4"
+kotlinx-coroutines = "1.7.3"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-vertexai = { module = "com.google.firebase:firebase-vertexai" }
+kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.29.0" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.32.0" }
