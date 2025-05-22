@@ -1,39 +1,32 @@
-package io.github.seanchinjunkai.firebase.vertexai
+package io.github.seanchinjunkai.firebase.ai
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.suspendCancellableCoroutine
-import FirebaseVertexAIBridge.*
 import platform.Foundation.NSError
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import FirebaseAIBridge.*
 
-actual class FirebaseW {
-    actual companion object {
-        actual fun vertexAI(): FirebaseVertexAIW {
-            return FirebaseVertexAIW()
-        }
+
+@OptIn(ExperimentalForeignApi::class)
+public actual object Firebase {
+    // TODO: App parameter currently missing
+    public actual fun ai(backend: GenerativeBackendEnum): FirebaseAI {
+        return FirebaseAI(IOSFirebase.aiWithBackend(true))
     }
 }
 
 @OptIn(ExperimentalForeignApi::class)
-actual class FirebaseVertexAIW {
-    private val delegate = FirebaseVertexAIBridge()
-
-    public actual fun generativeModel(modelName: String): GenerativeModelW {
-        return GenerativeModelW(modelName, delegate)
+actual class FirebaseAI internal constructor(val iOSFirebaseAI: IOSFirebaseAI) {
+    public actual fun generativeModel(modelName: String): GenerativeModel {
+        return GenerativeModel(iOSFirebaseAI.generativeModelWithModelName(modelName))
     }
 }
 
 @OptIn(ExperimentalForeignApi::class)
-actual class GenerativeModelW(
-    modelName: String,
-    delegate: FirebaseVertexAIBridge
-) {
-
-    private val delegate = delegate.generativeModelWithModelName(modelName)
-
-    public actual suspend fun generateContent(text: String): String = suspendCancellableCoroutine { continuation ->
-        delegate.generateContentWithPrompt(
-            text,
+actual class GenerativeModel internal constructor(val iOSGenerativeModel: IOSGenerativeModel) {
+    public actual suspend fun generateContent(prompt: String): String = suspendCancellableCoroutine { continuation ->
+        iOSGenerativeModel.generateContentWithPrompt(
+            prompt,
             completion = { result: String?, error: NSError? ->
                 val string: String = result ?: "No result"
                 when {
@@ -48,5 +41,4 @@ actual class GenerativeModelW(
                 }
             })
     }
-
 }

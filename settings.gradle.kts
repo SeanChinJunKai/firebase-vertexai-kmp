@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "firebase-vertexai-kmp"
-include(":firebase-vertexai-kmp")
+rootProject.name = "firebase-ai-kmp"
+include(":firebase-ai-kmp")
