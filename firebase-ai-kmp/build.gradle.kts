@@ -1,6 +1,7 @@
 import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -19,20 +20,42 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+
+    val xcf = XCFramework()
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach {
+        it.binaries.framework {
+            baseName = "shared"
+            xcf.add(this)
+        }
+
+        val platform = when (it.targetName) {
+            "iosSimulatorArm64" -> "iphonesimulator"
+            "iosArm64" -> "iphoneos"
+            else -> error("Unsupported target $name")
+        }
+
+        it.compilations.getByName("main") {
+            cinterops.create("FirebaseAIBridge") {
+                definitionFile.set(project.file("src/nativeInterop/cinterop/FirebaseAIBridge.def"))
+                includeDirs.headerFilterOnly("$rootDir/FirebaseAIBridge/build/Release-$platform/include")
+            }
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                //put your multiplatform dependencies here
+                implementation(libs.kermit)
+                implementation(libs.kotlinx.coroutines)
             }
         }
         val androidMain by getting {
             dependencies {
                 implementation(project.dependencies.platform(libs.firebase.bom))
-                implementation(libs.firebase.vertexai)
+                implementation(libs.firebase.ai)
             }
         }
         val commonTest by getting {
@@ -44,7 +67,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.seanchinjunkai.firebase_vertexai_kmp"
+    namespace = "io.github.seanchinjunkai.firebase_ai_kmp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -58,15 +81,17 @@ android {
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
-    signAllPublications()
+    if (!gradle.startParameter.taskNames.any { it.contains("publishToMavenLocal") }) {
+        signAllPublications()
+    }
 
-    coordinates(group.toString(), "firebase-vertexai-kmp", version.toString())
+    coordinates(group.toString(), "firebase-ai-kmp", version.toString())
 
     pom {
         name = "Firebase Vertex AI KMP"
         description = "A Kotlin Multiplatform Library for Firebase Vertex AI"
         inceptionYear = "2025"
-        url = "https://github.com/SeanChinJunKai/firebase-vertexai-kmp.git"
+        url = "https://github.com/SeanChinJunKai/firebase-ai-kmp.git"
         licenses {
             license {
                 name = "The Apache License, Version 2.0"
@@ -82,9 +107,9 @@ mavenPublishing {
             }
         }
         scm {
-            url = "https://github.com/SeanChinJunKai/firebase-vertexai-kmp.git"
-            connection = "scm:git:git//github.com/SeanChinJunKai/firebase-vertexai-kmp.git"
-            developerConnection = "scm:git:ssh://git@github.com/SeanChinJunKai/firebase-vertexai-kmp.git"
+            url = "https://github.com/SeanChinJunKai/firebase-ai-kmp.git"
+            connection = "scm:git:git//github.com/SeanChinJunKai/firebase-ai-kmp.git"
+            developerConnection = "scm:git:ssh://git@github.com/SeanChinJunKai/firebase-ai-kmp.git"
         }
     }
 }

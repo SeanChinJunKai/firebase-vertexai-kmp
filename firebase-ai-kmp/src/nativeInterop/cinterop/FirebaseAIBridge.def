@@ -1,0 +1,12 @@
+language = Objective-C
+
+headers = FirebaseAIBridge/FirebaseAIBridge-Swift.h
+package = FirebaseAIBridge
+
+headerFilter = FirebaseAIBridge/*
+
+staticLibraries = libFirebaseAIBridge.a
+libraryPaths.ios_arm64 = ../FirebaseAIBridge/build/Release-iphoneos
+libraryPaths.ios_simulator_arm64 = ../FirebaseAIBridge/build/Release-iphonesimulator
+
+linkerOpts = -L/usr/lib/swift
